@@ -39,12 +39,12 @@ interface Props {
 
 
 const assistantQuestions = [
-    "How can i help you",
-  "What's the recipient's name?",
-  "What's the sender's name?",
-  "What is the purpose of the email?",
-  "Any important details to include?",
-  "How formal should the email be?",
+  "Hi there! How can I assist you with your email today?",
+  "Who is the recipient of the email?",
+  "What is your name (or the sender’s name)?",
+  "What is the main purpose or topic of this email?",
+  "Are there any specific details or points you'd like to include?",
+  "What level of formality should the email have? (e.g., formal, semi-formal, informal)",
 ];
 
 export const Chat = memo(({ stopConversationRef }: Props) => {
@@ -168,7 +168,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
         homeDispatch({ field: 'loading', value: true });
         homeDispatch({ field: 'messageIsStreaming', value: true });
         const chatBody: ChatBody = {
-          model: updatedConversation.model.name,
+          model: updatedConversation.model?.name,
           system: updatedConversation.prompt,
           prompt: updatedConversation.messages.map(message => message.content).join(' '),
           //messages: updatedConversation.messages,

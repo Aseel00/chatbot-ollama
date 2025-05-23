@@ -133,9 +133,14 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
           ? 'border-b border-black/10 bg-gray-50/90 text-gray-800 dark:border-gray-900/50 dark:bg-[#444654]/95 dark:text-gray-100'
           : 'border-b border-black/10 bg-white/95 text-gray-800 dark:border-gray-900/50 dark:bg-[#343541]/95 dark:text-gray-100'
       }`}
-      style={{ overflowWrap: 'anywhere' }}
+      style={{ overflowWrap: 'anywhere', color: '#D0D3ED' }}
     >
-      <div className="relative m-auto flex p-4 text-base md:max-w-2xl md:gap-6 md:py-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
+      <div
+  className={`relative m-auto flex p-4 text-base md:max-w-2xl md:gap-6 md:py-6
+              lg:max-w-2xl lg:px-0 xl:max-w-3xl
+              ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
+>
+
         <div className="min-w-[40px] text-right">
           {message.role === 'assistant' ? (
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-r from-purple-500/70 to-blue-500/70 text-white">
@@ -148,7 +153,11 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
           )}
         </div>
 
-        <div className="prose mt-[-2px] w-full dark:prose-invert">
+        <div
+  className={`prose mt-[-2px] max-w-[80%] dark:prose-invert
+              ${message.role === 'user' ? 'ml-auto text-right' : 'mr-auto'}`}
+>
+
           {message.role === 'user' ? (
             <div className="flex w-full">
               {isEditing ? (
@@ -215,7 +224,7 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
           ) : (
             <div className="flex flex-row">
               <MemoizedReactMarkdown
-                className="prose dark:prose-invert flex-1"
+                className="prose dark:prose-invert flex-1 font-bold"
                 remarkPlugins={[remarkGfm, remarkMath]}
                 components={{
                   code({ node, inline, className, children, ...props }) {
