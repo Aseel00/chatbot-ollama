@@ -35,6 +35,7 @@ import { Chat } from '@/components/Chat/Chat';
 import { Chatbar } from '@/components/Chatbar/Chatbar';
 import { Navbar } from '@/components/Mobile/Navbar';
 import Promptbar from '@/components/Promptbar';
+import { EmailInterface } from '@/components/Email/EmailInterface';
 
 import HomeContext from './home.context';
 import { HomeInitialState, initialState } from './home.state';
@@ -170,10 +171,11 @@ const Home = ({ defaultModelId }: Props) => {
       id: uuidv4(),
       name: t('New Conversation'),
       messages: [],
-      model: lastConversation?.model,
+      model: OllamaModels[defaultModelId],
       prompt: DEFAULT_SYSTEM_PROMPT,
-      temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
+      temperature: DEFAULT_TEMPERATURE,
       folderId: null,
+      mode: 'chat'
     };
 
     const updatedConversations = [...conversations, newConversation];
@@ -287,6 +289,7 @@ const Home = ({ defaultModelId }: Props) => {
           prompt: DEFAULT_SYSTEM_PROMPT,
           temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
           folderId: null,
+          mode: 'chat'
         },
       });
     }
@@ -305,30 +308,32 @@ const Home = ({ defaultModelId }: Props) => {
       }}
     >
       <Head>
-        <title>Chatbot Ollama</title>
-        <meta name="description" content="ChatGPT but local." />
+        <title>AI Email Generator</title>
+        <meta name="description" content="An intelligent AI assistant that helps you generate professional emails with ease." />
         <meta
           name="viewport"
           content="height=device-height ,width=device-width, initial-scale=1, user-scalable=no"
         />
-        <link rel="icon" href="/favicon.png" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </Head>
       {selectedConversation && (
         <main
           className={`flex h-screen w-screen flex-col text-sm text-white dark:text-white ${lightMode}`}
         >
-          <div className="fixed top-0 w-full sm:hidden">
-            <Navbar
-              selectedConversation={selectedConversation}
-              onNewConversation={handleNewConversation}
-            />
-          </div>
+          <Navbar
+            selectedConversation={selectedConversation}
+            onNewConversation={handleNewConversation}
+          />
 
-          <div className="flex h-full w-full pt-[48px] sm:pt-0">
+          <div className="flex h-full w-full pt-[48px]">
             <Chatbar />
 
             <div className="flex flex-1">
-              <Chat stopConversationRef={stopConversationRef} />
+              {selectedConversation.mode === 'email' ? (
+                <EmailInterface />
+              ) : (
+                <Chat stopConversationRef={stopConversationRef} />
+              )}
             </div>
 
             <Promptbar />

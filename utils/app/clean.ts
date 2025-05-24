@@ -49,6 +49,13 @@ export const cleanSelectedConversation = (conversation: Conversation) => {
     };
   }
 
+  if (!updatedConversation.mode) {
+    updatedConversation = {
+      ...updatedConversation,
+      mode: 'chat',
+    };
+  }
+
   return updatedConversation;
 };
 
@@ -84,6 +91,10 @@ export const cleanConversationHistory = (history: any[]): Conversation[] => {
 
       if (!conversation.messages) {
         conversation.messages = [];
+      }
+
+      if (!conversation.mode) {
+        conversation.mode = 'chat';
       }
 
       acc.push(conversation);

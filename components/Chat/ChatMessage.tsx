@@ -136,12 +136,11 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
       style={{ overflowWrap: 'anywhere', color: '#D0D3ED' }}
     >
       <div
-  className={`relative m-auto flex p-4 text-base md:max-w-2xl md:gap-6 md:py-6
-              lg:max-w-2xl lg:px-0 xl:max-w-3xl
-              ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
->
-
-        <div className="min-w-[40px] text-right">
+        className={`relative m-auto flex p-4 text-base md:max-w-2xl md:gap-6 md:py-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl ${
+          message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
+        }`}
+      >
+        <div className={`min-w-[40px] ${message.role === 'user' ? 'text-left' : 'text-right'}`}>
           {message.role === 'assistant' ? (
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-r from-purple-500/70 to-blue-500/70 text-white">
               <IconRobot size={20} stroke={2.5} />
@@ -153,11 +152,9 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
           )}
         </div>
 
-        <div
-  className={`prose mt-[-2px] max-w-[80%] dark:prose-invert
-              ${message.role === 'user' ? 'ml-auto text-right' : 'mr-auto'}`}
->
-
+        <div className={`prose mt-[-2px] max-w-[80%] dark:prose-invert ${
+          message.role === 'user' ? 'text-right mr-4' : 'text-left ml-4'
+        }`}>
           {message.role === 'user' ? (
             <div className="flex w-full">
               {isEditing ? (
@@ -205,7 +202,9 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
               )}
 
               {!isEditing && (
-                <div className="md:-mr-8 ml-1 md:ml-0 flex flex-col md:flex-row gap-4 md:gap-1 items-center md:items-start justify-end md:justify-start">
+                <div className={`md:-mr-8 ml-1 md:ml-0 flex flex-col md:flex-row gap-4 md:gap-1 items-center ${
+                  message.role === 'user' ? 'md:items-end' : 'md:items-start'
+                } justify-end md:justify-start`}>
                   <button
                     className="invisible group-hover:visible focus:visible text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
                     onClick={toggleEditing}

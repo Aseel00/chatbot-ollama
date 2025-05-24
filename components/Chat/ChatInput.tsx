@@ -13,6 +13,8 @@ import {
   useEffect,
   useRef,
   useState,
+  memo,
+  FC,
 } from 'react';
 
 import { useTranslation } from 'next-i18next';
@@ -26,7 +28,7 @@ import { PromptList } from './PromptList';
 import { VariableModal } from './VariableModal';
 
 interface Props {
-  onSend: (message: Message) => void;
+  onSend: (message: Message, deleteCount?: number) => void;
   onRegenerate: () => void;
   onScrollDownClick: () => void;
   stopConversationRef: MutableRefObject<boolean>;
@@ -34,19 +36,18 @@ interface Props {
   showScrollDownButton: boolean;
 }
 
-export const ChatInput = ({
+export const ChatInput: FC<Props> = memo(({
   onSend,
   onRegenerate,
   onScrollDownClick,
   stopConversationRef,
   textareaRef,
   showScrollDownButton,
-}: Props) => {
+}) => {
   const { t } = useTranslation('chat');
 
   const {
     state: { selectedConversation, messageIsStreaming, prompts },
-
     dispatch: homeDispatch,
   } = useContext(HomeContext);
 
@@ -66,6 +67,17 @@ export const ChatInput = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
+    const maxLength = selectedConversation?.model?.maxLength;
+
+    if (maxLength && value.length > maxLength) {
+      alert(
+        t(
+          `Message limit is {{maxLength}} characters. You have entered {{valueLength}} characters.`,
+          { maxLength, valueLength: value.length },
+        ),
+      );
+      return;
+    }
 
     setContent(value);
     updatePromptListVisibility(value);
@@ -205,6 +217,24 @@ export const ChatInput = ({
     }
   };
 
+  const handlePaste = (e: any) => {
+    if (selectedConversation?.model?.maxLength) {
+      const pasted = e.clipboardData.getData('text');
+      if (content?.length + pasted.length > selectedConversation.model.maxLength) {
+        e.preventDefault();
+        alert(
+          t(
+            `Message limit is {{maxLength}} characters. You have entered {{valueLength}} characters.`,
+            {
+              maxLength: selectedConversation.model.maxLength,
+              valueLength: content?.length + pasted.length,
+            },
+          ),
+        );
+      }
+    }
+  };
+
   useEffect(() => {
     if (promptListRef.current) {
       promptListRef.current.scrollTop = activePromptIndex * 30;
@@ -215,11 +245,8 @@ export const ChatInput = ({
     if (textareaRef && textareaRef.current) {
       textareaRef.current.style.height = 'inherit';
       textareaRef.current.style.height = `${textareaRef.current?.scrollHeight}px`;
-      textareaRef.current.style.overflow = `${
-        textareaRef?.current?.scrollHeight > 400 ? 'auto' : 'hidden'
-      }`;
     }
-  }, [content, textareaRef]);
+  }, [content]);
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -239,116 +266,73 @@ export const ChatInput = ({
   }, []);
 
   return (
-    <div className="absolute bottom-0 left-0 w-full border-transparent bg-gradient-to-b from-transparent via-white to-white pt-6 dark:border-white/20 dark:via-[#343541] dark:to-[#343541] md:pt-2">
-      <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
+    <div className="relative">
+      <textarea
+        ref={textareaRef}
+        className="email-input min-h-[60px] w-full resize-none bg-transparent px-4 py-3 text-black dark:text-white"
+        style={{ resize: 'none' }}
+        placeholder={t('Type your message...')}
+        value={content}
+        rows={1}
+        onCompositionStart={() => setIsTyping(true)}
+        onCompositionEnd={() => setIsTyping(false)}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+      />
+
+      <div className="absolute right-2 bottom-2 flex items-center space-x-2">
         {messageIsStreaming && (
           <button
-            className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded-md border border-neutral-200 bg-white py-2 px-4 text-black hover:bg-neutral-100 transition-colors duration-200 shadow-sm dark:border-neutral-600 dark:bg-[#343541] dark:text-white dark:hover:bg-[#424554] md:mb-0 md:mt-2"
+            className="email-button p-2 rounded-md hover:opacity-80"
             onClick={handleStopConversation}
           >
-            <IconPlayerStop size={16} stroke={2} /> {t('Stop Generating')}
+            <IconPlayerStop size={16} />
           </button>
         )}
 
-        {!messageIsStreaming &&
-          selectedConversation &&
-          selectedConversation.messages.length > 0 && (
-            <button
-              className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded-md border border-neutral-200 bg-white py-2 px-4 text-black hover:bg-neutral-100 transition-colors duration-200 shadow-sm dark:border-neutral-600 dark:bg-[#343541] dark:text-white dark:hover:bg-[#424554] md:mb-0 md:mt-2"
-              onClick={onRegenerate}
-            >
-              <IconRepeat size={16} stroke={2} /> {t('Regenerate response')}
-            </button>
-          )}
-
-        <div className="relative mx-2 flex w-full flex-grow flex-col rounded-xl border border-black/10 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08)] dark:border-gray-900/50 dark:bg-[#40414F] dark:text-white dark:shadow-[0_2px_12px_rgba(0,0,0,0.16)] sm:mx-4">
-          <div
-            className="absolute left-2 top-2 rounded-md p-1.5 text-neutral-800 opacity-60 dark:text-neutral-100"
-          >
-            <IconBolt size={20} stroke={1.5} />
-          </div>
-          <textarea
-            ref={textareaRef}
-            className="m-0 w-full resize-none border-0 bg-transparent p-0 py-2 pr-8 pl-10 text-black dark:bg-transparent dark:text-white md:py-3 md:pl-10"
-            style={{
-              resize: 'none',
-              bottom: `${textareaRef?.current?.scrollHeight}px`,
-              maxHeight: '400px',
-              overflow: `${
-                textareaRef.current && textareaRef.current.scrollHeight > 400
-                  ? 'auto'
-                  : 'hidden'
-              }`,
-            }}
-            placeholder={
-              t('Type a message or type "/" to select a prompt...') || ''
-            }
-            value={content}
-            rows={1}
-            onCompositionStart={() => setIsTyping(true)}
-            onCompositionEnd={() => setIsTyping(false)}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-          />
-
-          <button
-            className="absolute right-2 top-2 rounded-md p-1.5 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 transition-colors duration-200 dark:text-neutral-100 dark:hover:bg-neutral-600 dark:hover:text-neutral-200"
-            onClick={handleSend}
-          >
-            {messageIsStreaming ? (
-              <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-neutral-800 opacity-60 dark:border-neutral-100"></div>
-            ) : (
-              <IconSend size={18} stroke={1.5} />
-            )}
-          </button>
-
-          {showScrollDownButton && (
-            <div className="absolute bottom-12 right-0 lg:bottom-0 lg:-right-10">
-              <button
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-200 text-gray-800 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-neutral-200 transition-all duration-200 hover:bg-neutral-300 dark:hover:bg-gray-600"
-                onClick={onScrollDownClick}
-              >
-                <IconArrowDown size={18} stroke={1.5} />
-              </button>
-            </div>
-          )}
-
-          {showPromptList && filteredPrompts.length > 0 && (
-            <div className="absolute bottom-12 w-full">
-              <PromptList
-                activePromptIndex={activePromptIndex}
-                prompts={filteredPrompts}
-                onSelect={handleInitModal}
-                onMouseOver={setActivePromptIndex}
-                promptListRef={promptListRef}
-              />
-            </div>
-          )}
-
-          {isModalVisible && (
-            <VariableModal
-              prompt={filteredPrompts[activePromptIndex]}
-              variables={variables}
-              onSubmit={handleSubmit}
-              onClose={() => setIsModalVisible(false)}
-            />
-          )}
-        </div>
-      </div>
-      <div className="px-3 pt-2 pb-3 text-center text-[12px] text-black/50 dark:text-white/50 md:px-4 md:pt-3 md:pb-6">
-        <a
-          href="https://github.com/ivanfioravanti/chatbot-ollama"
-          target="_blank"
-          rel="noreferrer"
-          className="underline hover:text-black/70 dark:hover:text-white/70 transition-colors duration-200"
+        <button
+          className="email-button p-2 rounded-md hover:opacity-80"
+          onClick={handleSend}
         >
-          Chatbot Ollama
-        </a>
-        .{' '}
-        {t(
-          "Chatbot Ollama is an advanced chatbot kit for Ollama models aiming to mimic ChatGPT's interface and functionality.",
-        )}
+          <IconSend size={16} />
+        </button>
       </div>
+
+      {showScrollDownButton && (
+        <div className="absolute bottom-12 right-0">
+          <button
+            className="email-button flex items-center gap-2 rounded-md p-2"
+            onClick={onScrollDownClick}
+          >
+            <IconArrowDown size={16} />
+            {t('Scroll to bottom')}
+          </button>
+        </div>
+      )}
+
+      {showPromptList && filteredPrompts.length > 0 && (
+        <div className="absolute bottom-12 w-full">
+          <PromptList
+            activePromptIndex={activePromptIndex}
+            prompts={filteredPrompts}
+            onSelect={handleInitModal}
+            onMouseOver={setActivePromptIndex}
+            promptListRef={promptListRef}
+          />
+        </div>
+      )}
+
+      {isModalVisible && (
+        <VariableModal
+          prompt={filteredPrompts[activePromptIndex]}
+          variables={variables}
+          onSubmit={handleSubmit}
+          onClose={() => setIsModalVisible(false)}
+        />
+      )}
     </div>
   );
-};
+});
+
+ChatInput.displayName = 'ChatInput';
