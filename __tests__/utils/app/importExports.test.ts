@@ -105,10 +105,12 @@ describe('cleanData Functions', () => {
             prompt: DEFAULT_SYSTEM_PROMPT,
             temperature: DEFAULT_TEMPERATURE,
             folderId: null,
+            mode: 'chat'
           },
         ],
         folders: [],
         prompts: [],
+        mode: 'chat'
       });
     });
   });
@@ -161,6 +163,7 @@ describe('cleanData Functions', () => {
             prompt: DEFAULT_SYSTEM_PROMPT,
             temperature: DEFAULT_TEMPERATURE,
             folderId: null,
+            mode: 'chat'
           },
         ],
         folders: [
@@ -171,6 +174,7 @@ describe('cleanData Functions', () => {
           },
         ],
         prompts: [],
+        mode: 'chat'
       });
     });
   });
@@ -240,6 +244,7 @@ describe('cleanData Functions', () => {
             prompt: DEFAULT_SYSTEM_PROMPT,
             temperature: DEFAULT_TEMPERATURE,
             folderId: null,
+            mode: 'chat'
           },
         ],
         folders: [
@@ -259,6 +264,7 @@ describe('cleanData Functions', () => {
             folderId: null,
           },
         ],
+        mode: 'chat'
       });
     });
   });

@@ -41,4 +41,5 @@ export interface ExportFormatV4 {
   history: Conversation[];
   folders: FolderInterface[];
   prompts: Prompt[];
+  mode?: string;
 }

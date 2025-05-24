@@ -37,6 +37,7 @@ export function cleanData(data: SupportedExportFormats): LatestExportFormat {
       history: cleanConversationHistory(data),
       folders: [],
       prompts: [],
+      mode: 'chat'
     };
   }
 
@@ -50,15 +51,20 @@ export function cleanData(data: SupportedExportFormats): LatestExportFormat {
         type: 'chat',
       })),
       prompts: [],
+      mode: 'chat'
     };
   }
 
   if (isExportFormatV3(data)) {
-    return { ...data, version: 4, prompts: [] };
+    return { ...data, version: 4, prompts: [], mode: 'chat' };
   }
 
   if (isExportFormatV4(data)) {
-    return data;
+    return {
+      ...data,
+      history: cleanConversationHistory(data.history),
+      mode: data.mode || 'chat'
+    };
   }
 
   throw new Error('Unsupported data format');
@@ -112,7 +118,7 @@ export const exportData = () => {
 export const importData = (
   data: SupportedExportFormats,
 ): LatestExportFormat => {
-  const { history, folders, prompts } = cleanData(data);
+  const { history, folders, prompts, mode } = cleanData(data);
 
   const oldConversations = localStorage.getItem('conversationHistory');
   const oldConversationsParsed = oldConversations
@@ -160,5 +166,6 @@ export const importData = (
     history: newHistory,
     folders: newFolders,
     prompts: newPrompts,
+    mode: mode || 'chat'
   };
 };
