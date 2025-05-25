@@ -39,7 +39,7 @@ interface Props {
 
 
 const assistantQuestions = [
-  "👋 Hi! I'm your email assistant. How can I help you draft your email today?",
+  "👋 Hi Alon",
   "📧 Who will be receiving this email?",
   "👤 What name should I use as the sender?",
   "📝 What's the main purpose or subject of this email?",
